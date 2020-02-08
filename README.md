@@ -1,10 +1,13 @@
-# Hacking the IKEA TRÅDFRI
+# Project fork
+Note: please visit the original [TRADFRI-Hacking](https://github.com/basilfx/TRADFRI-Hacking) project for original readme notes and information. Below notes have been revised to include more details on using OpenOCD and Arduno-CMSIS-DAP.
 
+# Hacking the IKEA TRÅDFRI
 * [Introduction](#introduction)
 * [Components](#components)
 * [Pinout](#pinout)
 * [Flashing using JTAG](#flashing-using-jtag)
-* [Software used](#software-used)
+* [Using JLink](#using-jlink)
+* [Using OpenOCD](#using-openocd)
 * [Custom firmware](#custom-firmware)
 * [Isolation](#isolation)
 * [Pictures](#pictures)
@@ -63,8 +66,8 @@ In my case, I could leave the module in the light bulb, but for flashing I provi
 
 I'm working on a small PCB that can host a TRÅDFRI module. You can find it in [the pcbs folder](pcbs/devboard).
 
-## Software used
-You can use software like [JLink](https://www.segger.com/products/debug-probes/j-link/) or [OpenOCD](http://www.openocd.org) to flash the target.
+## Using JLink
+You can use software like [JLink](https://www.segger.com/products/debug-probes/j-link/) to flash the target.
 
 If you use JLink, you can use the command below to connect to the board:
 
@@ -88,6 +91,26 @@ verifybin output.bin 0x0
 I have confirmed that you can dump the flash, erase the device and load it again, and the light bulb will still work.
 
 An analysis of the firmware encountered in the GU10 light I bougth can be found in [FIRMWARE.md](FIRMWARE.md).
+
+## Using OpenOCD
+You can use [OpenOCD](http://www.openocd.org) to flash the target. You also can download the [precompliled binaries](https://sourceforge.net/projects/openocd/files/openocd/).
+
+OpenOCD supports both JTAG and SWD debugger protocols for ARM processors, for which you will need the corresponding hardware. You can look for one of the cheap alternatives or you can also use Arduino Pro Micro (3V3) or Teensy 3.2 (3V3).
+
+Setup your Teensy and OpenOCD as follows:
+
+* Clone Arduino CMSIS-DAP from [original project](https://github.com/myelin/arduino-cmsis-dap) or the [fork](https://github.com/sinishadjukic/arduino-cmsis-dap). The fork saves you a minute in the next step
+* On your dev machine overwrite the original "C:\Program Files (x86)\Arduino\hardware\teensy\avr\cores\teensy3\usb_desc.h" file with the one provided by the forked project in "arduino-cmsis-dap/teensy3/usb_desh.h". If you are using another HW variant please check the "arduino-cmsis-dap/arduino-cmsis-dap.ino" sketch for more instructions. These changes will modify your USB product name to include the "CMSIS-DAP" string and get recognized by OpenOCD
+* Flash yout Teensy 3.2 with the sketch
+* Download OpenOCD from the links above
+* Clone the [TRADFRI-Hacking fork](https://github.com/SinishaDjukic/TRADFRI-Hacking/)
+* Add the "TRADFRI-Hacking\openocd\scripts\target\efm32_ikea_icca1.cfg" file to your OpenOCD in "share\openocd\scripts\target\efm32_ikea_icca1.cfg"
+* Connect your Teensy 3.2 to the Ikea module as follows (connecting the Reset pin does not seem to work)
+** Teensy GND - Ikea GND
+** Teensy VCC - Ikea VCC
+** Teensy 19 - Ikea PF1 (SWDIO)
+** Teensy 20 - Ikea PF0 (SWCLK)
+** Teensy 21 - Ikea PF2 (SWO)
 
 ## Custom firmware
 The chip is a normal Cortex M4. You can flash it with anything. As a starting point, you could take a look at [this pull request](https://github.com/RIOT-OS/RIOT/pull/8047) for RIOT-OS. To get started.
