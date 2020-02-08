@@ -100,17 +100,33 @@ OpenOCD supports both JTAG and SWD debugger protocols for ARM processors, for wh
 Setup your Teensy and OpenOCD as follows:
 
 * Clone Arduino CMSIS-DAP from [original project](https://github.com/myelin/arduino-cmsis-dap) or the [fork](https://github.com/sinishadjukic/arduino-cmsis-dap). The fork saves you a minute in the next step
-* On your dev machine overwrite the original "C:\Program Files (x86)\Arduino\hardware\teensy\avr\cores\teensy3\usb_desc.h" file with the one provided by the forked project in "arduino-cmsis-dap/teensy3/usb_desh.h". If you are using another HW variant please check the "arduino-cmsis-dap/arduino-cmsis-dap.ino" sketch for more instructions. These changes will modify your USB product name to include the "CMSIS-DAP" string and get recognized by OpenOCD
+* On your dev machine overwrite the original `C:\Program Files (x86)\Arduino\hardware\teensy\avr\cores\teensy3\usb_desc.h` file with the one provided by the forked project in `arduino-cmsis-dap/teensy3/usb_desh.h`. If you are using another HW variant please check the `arduino-cmsis-dap/arduino-cmsis-dap.ino` sketch for more instructions. These changes will modify your USB product name to include the `CMSIS-DAP` string and get recognized by OpenOCD
 * Flash yout Teensy 3.2 with the sketch
 * Download OpenOCD from the links above
 * Clone the [TRADFRI-Hacking fork](https://github.com/SinishaDjukic/TRADFRI-Hacking/)
-* Add the "TRADFRI-Hacking\openocd\scripts\target\efm32_ikea_icca1.cfg" file to your OpenOCD in "share\openocd\scripts\target\efm32_ikea_icca1.cfg"
+* Add the `TRADFRI-Hacking\openocd\scripts\target\efm32_ikea_icca1.cfg` file to your OpenOCD in `share\openocd\scripts\target\efm32_ikea_icca1.cfg`
 * Connect your Teensy 3.2 to the Ikea module as follows (connecting the Reset pin does not seem to work)
-** Teensy GND - Ikea GND
-** Teensy VCC - Ikea VCC
-** Teensy 19 - Ikea PF1 (SWDIO)
-** Teensy 20 - Ikea PF0 (SWCLK)
-** Teensy 21 - Ikea PF2 (SWO)
+  * Teensy GND - Ikea GND
+  * Teensy VCC - Ikea VCC
+  * Teensy 19 - Ikea PF1 (SWDIO)
+  * Teensy 20 - Ikea PF0 (SWCLK)
+  * Teensy 21 - Ikea PF2 (SWO)
+
+Run OpenOCD in one terminal:
+```
+openocd -f interface/cmsis-dap.cfg -f target/efm32_ikea_icca1.cfg -d
+```
+
+Connect to OpenOCD in the second one via telnet:
+```
+telnet localhost 4444
+```
+
+You should be able to e.g. download the current firmare from the flash now:
+```
+> flash read_bank 0 ikea_icca1_gu10.bin                                                                                                 detected part: EFR32MG1P Mighty Gecko, rev 161                                                                                           flash size = 256kbytes                                                                                                                   flash page size = 2048bytes                                                                                                             wrote 262144 bytes to file ikea_icca1_gu10.bin from flash bank 0 at offset 0x00000000 in 11.238334s (22.779 KiB/s)  
+```
+
 
 ## Custom firmware
 The chip is a normal Cortex M4. You can flash it with anything. As a starting point, you could take a look at [this pull request](https://github.com/RIOT-OS/RIOT/pull/8047) for RIOT-OS. To get started.
